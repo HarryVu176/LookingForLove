@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import LoadingScreen from '../screens/common/LoadingScreen';
@@ -27,9 +27,11 @@ const AppNavigator: React.FC = () => {
   }
   
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
+    <NavigationIndependentTree>
+      <NavigationContainer>
+        {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    </NavigationIndependentTree>
   );
 };
 
