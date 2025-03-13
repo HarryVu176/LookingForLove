@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { EventRegister } from 'react-native-event-listeners';
 
 
 let API_URL = 'http://localhost:5000/api';
@@ -73,13 +74,14 @@ export class ApiService {
           console.log('Received 401 error for request:', originalRequest.url);
           
           // Only clear token if it's explicitly an invalid token error
-          // This prevents clearing the token for other 401 errors
           if (error.response?.data?.message === 'Invalid or expired token' || 
               error.response?.data?.message === 'Invalid token') {
             console.log('Clearing token due to invalid token error');
             await AsyncStorage.removeItem('token');
             await AsyncStorage.removeItem('user');
-            // Don't automatically redirect - let the component handle it
+            
+            // Emit an event for token expiration that components can listen to
+            EventRegister.emit('tokenExpired', { reason: 'token_expired' });
           }
         }
         

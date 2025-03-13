@@ -22,7 +22,7 @@ export interface IUserBase {
 
 export interface IUser extends IUserBase {
   _id?: string;
-  memberType: 'free' | 'paid';
+  memberType: 'free' | 'paid' | 'product';
   technicalSkillsOwned: ITechnicalSkill[];
   technicalSkillsDesired: ITechnicalSkill[];
   createdAt: Date;

@@ -19,7 +19,7 @@ export interface IUser {
   gender: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
   photoUrl?: string;
   contactInfo: IContactInfo;
-  memberType: 'free' | 'paid';
+  memberType: 'free' | 'paid' | 'product';
   technicalSkillsOwned: ITechnicalSkill[];
   technicalSkillsDesired: ITechnicalSkill[];
   subscriptionDate?: Date;

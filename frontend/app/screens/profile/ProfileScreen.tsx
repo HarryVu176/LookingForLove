@@ -98,6 +98,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
         )}
 
+        {profile?.memberType === 'product' && (
+          <View style={[styles.membershipBadge, styles.productMembershipBadge]}>
+            <Text style={styles.membershipText}>Product Manager</Text>
+          </View>
+        )}
+
         <View style={styles.buttonContainer}>
           <Button
             title="Edit Profile"
@@ -222,6 +228,9 @@ const styles = StyleSheet.create({
   },
   paidMembershipBadge: {
     backgroundColor: '#28a745',
+  },
+  productMembershipBadge: {
+    backgroundColor: '#9370db',
   },
   membershipText: {
     color: '#fff',

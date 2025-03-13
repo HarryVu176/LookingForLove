@@ -21,8 +21,7 @@ export class AuthService {
   public async register(userData: Partial<IUser>): Promise<IUser> {
     // Create a new user
     const newUser = new UserModel({
-      ...userData,
-      memberType: 'free' // Default to free membership
+      ...userData
     });
 
     const savedUser = await newUser.save();
@@ -40,7 +39,6 @@ export class AuthService {
       throw new Error('User not found');
     }
 
-    // Verify password - This would be implemented in a real app
     // In this MVP, we're skipping password checks since it's not in requirements
 
     // Generate JWT token

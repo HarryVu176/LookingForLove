@@ -35,7 +35,7 @@ const UserSchema: Schema = new Schema({
   contactInfo: ContactInfoSchema,
   memberType: { 
     type: String, 
-    enum: ['free', 'paid'],
+    enum: ['free', 'paid', 'product'],
     default: 'free',
     required: true 
   },

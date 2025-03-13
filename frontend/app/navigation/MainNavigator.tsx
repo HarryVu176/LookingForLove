@@ -19,7 +19,7 @@ const Stack = createStackNavigator<MainStackParamList>();
 
 function ProfileTabs() {
   const user = useSelector((state: RootState) => state.auth.user);
-  const isProductManager = user?.memberType === 'paid';
+  const isProductManager = user?.memberType === 'product';
   
   return (
     <Tab.Navigator

@@ -78,7 +78,6 @@ const matchesSlice = createSlice({
       })
       .addCase(exposeContactInfo.fulfilled, (state) => {
         state.isLoading = false;
-        // We don't need to update the matches here as we'll reload them next time
       })
       .addCase(exposeContactInfo.rejected, (state, action) => {
         state.isLoading = false;
@@ -90,7 +89,6 @@ const matchesSlice = createSlice({
       })
       .addCase(rateMatch.fulfilled, (state) => {
         state.isLoading = false;
-        // We don't need to update the matches here as we'll reload them next time
       })
       .addCase(rateMatch.rejected, (state, action) => {
         state.isLoading = false;
