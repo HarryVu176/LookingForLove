@@ -1,50 +1,247 @@
-# Welcome to your Expo app 👋
+# Looking For Love
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern dating application with a React Native frontend and Node.js backend.
 
-## Get started
+## Project Structure
 
-1. Install dependencies
+This project is organized into two main directories:
 
+- `frontend/`: React Native Expo application
+- `backend/`: Node.js Express API server
+
+## Frontend
+
+### Technologies Used
+
+- React Native with Expo
+- TypeScript
+- Redux Toolkit for state management
+- React Navigation for routing
+- Formik & Yup for form validation
+- Axios for API requests
+
+### Setup Instructions
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
-
+3. Start the development server:
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Use the Expo Go app on your mobile device or an emulator to run the application.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Key Concepts
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+#### Redux Store
 
-## Get a fresh project
+The Redux store is configured in `frontend/app/store/index.ts`. It uses Redux Toolkit and Redux Persist to manage application state.
 
-When you're ready, run:
+The "store" in Redux is a central container that holds the entire application state. Think of it as a client-side database that maintains all the data your application needs to function. In our application, the store:
 
-```bash
-npm run reset-project
+- **Holds the global state**: All data that needs to be accessed by multiple components (user authentication, profile data, matches, statistics)
+- **Provides a single source of truth**: Any component can access the same data without prop drilling
+- **Enables predictable state updates**: All state changes follow the same pattern through actions and reducers
+- **Persists critical data**: Uses Redux Persist to save authentication state between app sessions
+
+Our store is organized into domain-specific slices:
+- `auth`: Manages user authentication state (login, registration, tokens)
+- `profile`: Handles user profile information
+- `matches`: Manages dating matches and interactions
+- `statistics`: Tracks user activity and app usage statistics
+
+```typescript
+// Simplified example of store configuration
+const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+To access store data in components:
+```typescript
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
-## Learn more
+// In a component
+const user = useSelector((state: RootState) => state.auth.user);
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+To update store data:
+```typescript
+import { useDispatch } from 'react-redux';
+import { login } from '../store/auth/authSlice';
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+// In a component
+const dispatch = useDispatch();
+dispatch(login(credentials));
+```
 
-## Join the community
+#### Redux Slices
 
-Join our community of developers creating universal apps.
+Slices are a way to organize Redux logic and reducers. Each slice contains:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. **State Interface**: Defines the shape of the state managed by the slice
+2. **Initial State**: Default values for the state
+3. **Reducers**: Functions that handle state changes
+4. **Async Thunks**: Functions for handling asynchronous operations
+
+Example from `authSlice.ts`:
+```typescript
+// State interface
+interface AuthState {
+  user: IUserProfile | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+// Async thunk for login
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials: ILoginRequest, { rejectWithValue }) => {
+    const response = await authService.login(credentials);
+    
+    if (!response.success) {
+      return rejectWithValue(response.message);
+    }
+    
+    return response;
+  }
+);
+
+// Slice definition
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    // Synchronous reducers
+  },
+  extraReducers: (builder) => {
+    // Handling async thunk states
+  }
+});
+```
+
+#### Navigation
+
+The app uses React Navigation for routing between screens. Navigation is configured in the `frontend/app/navigation` directory.
+
+## Backend
+
+### Technologies Used
+
+- Node.js with Express
+- TypeScript
+- MongoDB with Mongoose
+- JWT for authentication
+- Joi for validation
+
+### Setup Instructions
+
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the backend directory with the following variables:
+   ```
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/lookingforlove
+   JWT_SECRET=your_jwt_secret_key
+   NODE_ENV=development
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Key Concepts
+
+#### API Structure
+
+The backend follows a modular architecture:
+
+- **Controllers**: Handle HTTP requests and responses
+- **Services**: Contain business logic
+- **Models**: Define database schemas
+- **Routes**: Define API endpoints
+- **Middlewares**: Handle concerns like authentication
+- **Validators**: Validate request data
+
+#### Authentication Flow
+
+The backend uses JWT (JSON Web Tokens) for authentication:
+
+1. User registers or logs in
+2. Server validates credentials
+3. Server generates a JWT token
+4. Client stores the token
+5. Client includes the token in subsequent requests
+6. Server validates the token for protected routes
+
+#### Database Models
+
+Mongoose models define the structure of the data stored in MongoDB. For example:
+
+```typescript
+// User model
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  profile: {
+    name: { type: String, required: true },
+    age: { type: Number, required: true },
+    // Other profile fields
+  }
+});
+```
+
+## Scripts
+
+### Frontend Scripts
+
+- `npm start`: Start the Expo development server
+- `npm run android`: Start the app on Android
+- `npm run ios`: Start the app on iOS
+- `npm run web`: Start the app in a web browser
+- `npm run lint`: Run ESLint
+
+### Backend Scripts
+
+- `npm start`: Start the server
+- `npm run dev`: Start the server with hot reloading
+- `npm test`: Run tests
+- `npm run promote-manager`: Run script to promote a user to product manager
+- `npm run update-stats`: Run script to update statistics
+
+## Development Workflow
+
+1. Start the backend server
+2. Start the frontend Expo server
+3. Make changes to the code
+4. Test your changes in the Expo Go app or emulator
+
+## Troubleshooting
+
+- If you encounter connection issues, ensure both frontend and backend are running on the same network
+- Check that the API URL in the frontend is correctly pointing to your backend server
+- For MongoDB connection issues, verify your connection string in the `.env` file
+- Probably you don't even need .env as I hardcoded the connection string in the backend and frontend, unless you run different ports for Mongo.
