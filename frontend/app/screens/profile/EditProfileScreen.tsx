@@ -21,19 +21,20 @@ import Button from '../../components/common/Button';
 import { AppDispatch, RootState } from '../../store';
 import { MainNavigationProp } from '../../types/navigation';
 import { IUser } from '../../types/user';
+import profileService from '../../services/profileService';
 
 interface EditProfileScreenProps {
   navigation: MainNavigationProp<'EditProfile'>;
 }
 
 const validationSchema = Yup.object().shape({
-  salutation: Yup.string().required('Salutation is required'),
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
+  salutation: Yup.string(),
+  firstName: Yup.string(),
+  lastName: Yup.string(),
   nickname: Yup.string(),
-  gender: Yup.string().required('Gender is required'),
-  dateOfBirth: Yup.date().required('Date of birth is required'),
-  'contactInfo.email': Yup.string().email('Invalid email').required('Email is required'),
+  gender: Yup.string(),
+  dateOfBirth: Yup.date(),
+  'contactInfo.email': Yup.string().email('Invalid email'),
   'contactInfo.whatsAppId': Yup.string(),
 });
 
@@ -41,6 +42,31 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation }) => 
   const dispatch = useDispatch<AppDispatch>();
   const { profile, isLoading } = useSelector((state: RootState) => state.profile);
   const [photo, setPhoto] = useState<string | undefined>(profile?.photoUrl);
+
+  // Test function to directly call the API
+  const testDirectApiCall = async () => {
+    if (!profile) return;
+    
+    try {
+      console.log('Testing direct API call...');
+      const testData = {
+        firstName: profile.firstName + ' (updated)',
+        lastName: profile.lastName,
+        contactInfo: {
+          email: profile.contactInfo?.email,
+          whatsAppId: profile.contactInfo?.whatsAppId
+        }
+      };
+      
+      console.log('Test data:', JSON.stringify(testData, null, 2));
+      const response = await profileService.updateProfile(testData);
+      console.log('Direct API call response:', JSON.stringify(response, null, 2));
+      Alert.alert('API Test', 'Direct API call successful');
+    } catch (error) {
+      console.error('Direct API call error:', error);
+      Alert.alert('API Test Error', 'Direct API call failed');
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -80,17 +106,31 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation }) => 
     });
   };
 
-  const handleUpdateProfile = async (values: Partial<IUser>) => {
+  const handleUpdateProfile = async (values: any) => {
+    console.log('handleUpdateProfile called with values:', JSON.stringify(values, null, 2));
     try {
       // Format the update data according to our API expectations
       const updatedProfile = {
-        ...values,
+        salutation: values.salutation,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        nickname: values.nickname,
+        gender: values.gender,
+        dateOfBirth: values.dateOfBirth,
+        contactInfo: {
+          email: values.contactInfo.email,
+          whatsAppId: values.contactInfo.whatsAppId
+        }
       };
 
-      await dispatch(updateProfile(updatedProfile)).unwrap();
+      console.log('Sending profile update:', JSON.stringify(updatedProfile, null, 2));
+      
+      const result = await dispatch(updateProfile(updatedProfile)).unwrap();
+      console.log('Update profile result:', JSON.stringify(result, null, 2));
       Alert.alert('Success', 'Profile updated successfully');
       navigation.goBack();
     } catch (error) {
+      console.error('Profile update error:', error);
       Alert.alert('Error', 'Failed to update profile. Please try again.');
     }
   };
@@ -143,7 +183,11 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation }) => 
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={handleUpdateProfile}
+          onSubmit={(values) => {
+            console.log('Formik onSubmit called with values:', JSON.stringify(values, null, 2));
+            handleUpdateProfile(values);
+          }}
+          enableReinitialize
         >
           {({
             handleChange,
@@ -242,15 +286,46 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation }) => 
               <View style={styles.buttonContainer}>
                 <Button
                   title="Save Changes"
-                  onPress={handleSubmit}
+                  onPress={() => {
+                    console.log('Save Changes button pressed');
+                    handleSubmit();
+                  }}
                   loading={isLoading}
                 />
+                {/* <Button
+                  title="Direct Submit"
+                  onPress={() => {
+                    console.log('Direct Submit button pressed');
+                    if (profile) {
+                      handleUpdateProfile({
+                        salutation: profile.salutation,
+                        firstName: profile.firstName + ' (updated)',
+                        lastName: profile.lastName,
+                        nickname: profile.nickname,
+                        gender: profile.gender,
+                        dateOfBirth: profile.dateOfBirth,
+                        contactInfo: {
+                          email: profile.contactInfo?.email,
+                          whatsAppId: profile.contactInfo?.whatsAppId
+                        }
+                      });
+                    }
+                  }}
+                  type="primary"
+                  style={{ marginTop: 10 }}
+                /> */}
                 <Button
                   title="Cancel"
                   onPress={() => navigation.goBack()}
                   type="outline"
                   style={styles.cancelButton}
                 />
+                {/* <Button
+                  title="Test Direct API Call"
+                  onPress={testDirectApiCall}
+                  type="secondary"
+                  style={{ marginTop: 10 }}
+                /> */}
               </View>
 
               <View style={styles.technicalSkillsContainer}>

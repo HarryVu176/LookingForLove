@@ -36,8 +36,11 @@ export class ApiService {
           
           if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
-            console.log(`Adding token to request: ${config.method?.toUpperCase()} ${config.url}`);
-          } else {
+            // Only log on non-GET requests to reduce noise
+            if (config.method && config.method.toUpperCase() !== 'GET') {
+              console.log(`Adding token to request: ${config.method?.toUpperCase()} ${config.url}`);
+            }
+          } else if (!token) {
             console.log(`No token available for request: ${config.method?.toUpperCase()} ${config.url}`);
           }
           
@@ -55,7 +58,10 @@ export class ApiService {
 
     this.api.interceptors.response.use(
       (response: AxiosResponse) => {
-        console.log(`Response success: ${response.config.method?.toUpperCase()} ${response.config.url} (${response.status})`);
+        // Only log non-GET responses to reduce noise
+        if (response.config.method && response.config.method.toUpperCase() !== 'GET') {
+          console.log(`Response success: ${response.config.method?.toUpperCase()} ${response.config.url} (${response.status})`);
+        }
         return response;
       },
       async (error) => {
@@ -66,8 +72,11 @@ export class ApiService {
           return Promise.reject(error);
         }
         
-        console.log(`Response error: ${originalRequest.method?.toUpperCase()} ${originalRequest.url} (${error.response?.status})`);
-        console.log('Error message:', error.response?.data?.message);
+        // Only log errors for non-GET requests or 401 errors
+        if (originalRequest.method?.toUpperCase() !== 'GET' || error.response?.status === 401) {
+          console.log(`Response error: ${originalRequest.method?.toUpperCase()} ${originalRequest.url} (${error.response?.status})`);
+          console.log('Error message:', error.response?.data?.message);
+        }
         
         // Handle token expiration or unauthorized errors
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -101,8 +110,15 @@ export class ApiService {
   }
 
   public async put<T>(url: string, data?: any): Promise<T> {
-    const response = await this.api.put<T>(url, data);
-    return response.data;
+    console.log(`Making PUT request to ${url} with data:`, JSON.stringify(data, null, 2));
+    try {
+      const response = await this.api.put<T>(url, data);
+      console.log(`PUT response from ${url}:`, JSON.stringify(response.data, null, 2));
+      return response.data;
+    } catch (error: any) {
+      console.error(`PUT request to ${url} failed:`, error.message);
+      throw error;
+    }
   }
 
   public async delete<T>(url: string): Promise<T> {

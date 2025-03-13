@@ -19,10 +19,30 @@ export class ProfileService {
 
   public async updateProfile(profileData: Partial<IUser>): Promise<IProfileResponse> {
     try {
+      // Log the profile update attempt
+      console.log('Updating profile with data:', JSON.stringify(profileData, null, 2));
+      
       const response = await apiService.put<IProfileResponse>('/profile', profileData);
+      
+      // Log successful update
+      console.log('Profile updated successfully:', response.success);
+      
       return response;
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update profile');
+      console.error('Profile update error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Throw a more detailed error
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Failed to update profile');
+      }
     }
   }
 

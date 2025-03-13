@@ -47,7 +47,7 @@ export class AuthService {
       memberType: user.memberType
     };
     const signOptions: SignOptions = {
-      expiresIn: parseInt(jwtConfig.expiresIn),
+      expiresIn: '30d',
       ...jwtConfig.options
     };
 

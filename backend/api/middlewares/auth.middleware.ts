@@ -13,7 +13,7 @@ export function authMiddleware(req: IAuthRequest, res: Response, next: NextFunct
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: 'Authentication required' });
+      res.status(401).json({ success: false, message: 'Authentication required' });
       return;
     }
     
@@ -31,11 +31,13 @@ export function authMiddleware(req: IAuthRequest, res: Response, next: NextFunct
       next();
     } catch (tokenError) {
       console.error('Token verification error:', tokenError);
-      res.status(401).json({ message: 'Invalid or expired token' });
+      // Provide more specific error message
+      const errorMessage = tokenError instanceof Error ? tokenError.message : 'Invalid or expired token';
+      res.status(401).json({ success: false, message: errorMessage });
     }
   } catch (error) {
     console.error('Auth middleware error:', error);
-    res.status(500).json({ message: 'Authentication error' });
+    res.status(500).json({ success: false, message: 'Authentication error' });
   }
 }
 
