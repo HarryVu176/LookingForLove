@@ -18,17 +18,24 @@ export function authMiddleware(req: IAuthRequest, res: Response, next: NextFunct
     }
     
     const token = authHeader.split(' ')[1];
-    const decodedToken = authService.verifyToken(token);
     
-    // Add user info to request object
-    req.user = {
-      userId: decodedToken.userId,
-      memberType: decodedToken.memberType
-    };
-    
-    next();
+    try {
+      const decodedToken = authService.verifyToken(token);
+      
+      // Add user info to request object
+      req.user = {
+        userId: decodedToken.userId,
+        memberType: decodedToken.memberType
+      };
+      
+      next();
+    } catch (tokenError) {
+      console.error('Token verification error:', tokenError);
+      res.status(401).json({ message: 'Invalid or expired token' });
+    }
   } catch (error) {
-    res.status(401).json({ message: 'Invalid or expired token' });
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ message: 'Authentication error' });
   }
 }
 

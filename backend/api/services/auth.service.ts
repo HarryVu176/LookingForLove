@@ -89,7 +89,21 @@ export class AuthService {
       const decoded = verify(token, jwtConfig.secret) as IAuthPayload;
       return decoded;
     } catch (error) {
+      console.error('Token verification failed:', error);
       throw new Error('Invalid token');
+    }
+  }
+
+  /**
+   * Get user by ID
+   */
+  public async getUserById(userId: string): Promise<IUser | null> {
+    try {
+      const user = await UserModel.findById(userId);
+      return user ? user.toObject() : null;
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+      throw new Error('Failed to fetch user');
     }
   }
 }

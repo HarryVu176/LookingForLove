@@ -17,6 +17,7 @@ import EmptyState from '../../components/common/EmptyState';
 import { IMatchResult } from '../../types/match';
 import { MainNavigationProp } from '../../types/navigation';
 import { useFocusEffect } from '@react-navigation/native';
+import authService from '../../services/authService';
 
 interface MatchListScreenProps {
   navigation: MainNavigationProp<'ProfileTabs'>;
@@ -27,8 +28,33 @@ const MatchListScreen: React.FC<MatchListScreenProps> = ({ navigation }) => {
   const { matches, isLoading, error } = useSelector((state: RootState) => state.matches);
   const { user } = useSelector((state: RootState) => state.auth);
   
-  const fetchMatches = useCallback(() => {
-    dispatch(getMatches());
+  const fetchMatches = useCallback(async () => {
+    try {
+      // First refresh the token to ensure it's valid
+      const isTokenValid = await authService.refreshTokenIfNeeded();
+      
+      if (isTokenValid) {
+        // Only fetch matches if token is valid
+        dispatch(getMatches());
+      } else {
+        // If token refresh failed, show alert and log out
+        Alert.alert(
+          'Session Expired',
+          'Your session has expired. Please log in again.',
+          [
+            { 
+              text: 'OK', 
+              onPress: async () => {
+                // Log out which will clear the token and trigger AppNavigator to show AuthNavigator
+                await authService.logout();
+              } 
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error in fetchMatches:', error);
+    }
   }, [dispatch]);
   
   // Refresh matches when screen comes into focus

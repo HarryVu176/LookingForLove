@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { upgradeMembership } from '../../store/auth/authSlice';
 import Button from '../../components/common/Button';
 import { AppDispatch, RootState } from '../../store';
 import { MainNavigationProp } from '../../types/navigation';
+import authService from '../../services/authService';
 
 interface UpgradeMembershipScreenProps {
   navigation: MainNavigationProp<'UpgradeMembership'>;
@@ -22,7 +23,50 @@ const UpgradeMembershipScreen: React.FC<UpgradeMembershipScreenProps> = ({ navig
   const { isLoading } = useSelector((state: RootState) => state.auth);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   
+  // Check token validity when screen loads
+  useEffect(() => {
+    const checkToken = async () => {
+      const isTokenValid = await authService.refreshTokenIfNeeded();
+      
+      if (!isTokenValid) {
+        Alert.alert(
+          'Session Expired',
+          'Your session has expired. Please log in again.',
+          [
+            { 
+              text: 'OK', 
+              onPress: async () => {
+                await authService.logout();
+              } 
+            }
+          ]
+        );
+      }
+    };
+    
+    checkToken();
+  }, []);
+  
   const handleUpgrade = async () => {
+    // First refresh the token to ensure it's valid
+    const isTokenValid = await authService.refreshTokenIfNeeded();
+    
+    if (!isTokenValid) {
+      Alert.alert(
+        'Session Expired',
+        'Your session has expired. Please log in again.',
+        [
+          { 
+            text: 'OK', 
+            onPress: async () => {
+              await authService.logout();
+            } 
+          }
+        ]
+      );
+      return;
+    }
+    
     // Simulate payment processing
     setIsPaymentProcessing(true);
     

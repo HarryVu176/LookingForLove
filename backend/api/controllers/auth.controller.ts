@@ -48,6 +48,30 @@ export class AuthController {
       });
     }
   }
+
+  public async getCurrentUser(req: IAuthRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, message: 'Authentication required' });
+        return;
+      }
+      
+      // Get the user from the database using the userId from the token
+      const user = await authService.getUserById(req.user.userId);
+      
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' });
+        return;
+      }
+      
+      res.status(200).json({ success: true, user });
+    } catch (error) {
+      res.status(400).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to get user data' 
+      });
+    }
+  }
 }
 
 export default new AuthController();

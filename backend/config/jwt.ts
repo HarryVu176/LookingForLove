@@ -11,7 +11,7 @@ interface IJwtConfig {
 
 const jwtConfig: IJwtConfig = {
   secret: process.env.JWT_SECRET || 'lookingforlove-secret-key',
-  expiresIn: '7d', // Token expires in 7 days
+  expiresIn: '30d', // Increased from 7d to 30d
   options: {
     algorithm: 'HS256'
   }
