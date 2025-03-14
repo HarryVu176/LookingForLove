@@ -11,6 +11,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getProfile } from '../../store/profile/profileSlice';
+import { logout } from '../../store/auth/authSlice';
 import Button from '../../components/common/Button';
 import SkillsList from '../../components/profile/SkillsList';
 import LoadingIndicator from '../../components/common/LoadingIndicator';
@@ -40,6 +41,31 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   const handleUpgradeMembership = () => {
     navigation.navigate('UpgradeMembership');
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          onPress: () => {
+            dispatch(logout());
+            // Navigate to login screen if needed
+            if (navigation.canGoBack()) {
+              navigation.popToTop();
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   if (isLoading && !profile) {
@@ -170,6 +196,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </Text>
         </View>
       </View>
+
+      <View style={styles.logoutSection}>
+        <Button
+          title="Log Out"
+          onPress={handleLogout}
+          type="outline"
+          style={styles.logoutButton}
+          textStyle={styles.logoutButtonText}
+        />
+      </View>
     </ScrollView>
   );
 };
@@ -290,6 +326,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     textAlign: 'center',
+  },
+  logoutSection: {
+    marginVertical: 24,
+    paddingHorizontal: 16,
+  },
+  logoutButton: {
+    backgroundColor: '#dc3545',
+    borderColor: '#dc3545',
+  },
+  logoutButtonText: {
+    color: '#ffffff',
   },
 });
 
